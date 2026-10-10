@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hhy.rearqr">
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- foreground service keeps HyperOS's freezer from freezing the app (tile clicks were queued while frozen) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- overlay fallback on the rear display; granted via root `appops set ... SYSTEM_ALERT_WINDOW allow` -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:name=".App"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:theme="@style/AppTheme"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true">
+
+        <!-- settings -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- long-press on the Quick Settings tile opens the settings -->
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
+
+        <!-- transparent, untouchable entry for the QS tile and the CAPTURE action; stays until the capture is done (max 6 s) -->
+        <activity
+            android:name=".CaptureActivity"
+            android:exported="true"
+            android:theme="@style/CaptureTheme"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|keyboard|navigation|uiMode"
+            android:taskAffinity="com.hhy.rearqr.capture">
+            <intent-filter>
+                <action android:name="com.hhy.rearqr.CAPTURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- rear page: started invisible on display 0 in its own task, then moved to the rear display with
+             root "am display move-stack". Exported so root am start always works (it shows only the
+             in-memory crop and finishes at once if there is none). -->
+        <activity
+            android:name=".RearActivity"
+            android:exported="true"
+            android:theme="@style/RearTheme"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.hhy.rearqr.rear"
+            android:excludeFromRecents="true"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|keyboard|navigation|uiMode|colorMode|fontScale|layoutDirection|locale|touchscreen|mcc|mnc|fontWeightAdjustment|grammaticalGender" />
+
+        <service
+            android:name=".KeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keep the Quick Settings QR tile responsive (HyperOS freezes background apps)" />
+        </service>
+
+        <service
+            android:name=".QrTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

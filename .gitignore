@@ -1,0 +1,23 @@
+# signing key: never commit
+keystore/
+*.jks
+*.keystore
+*.p12
+*.pk8
+password.txt
+keystore.properties
+signing.properties
+local.properties
+# build outputs
+build/
+*.apk
+*.aab
+*.idsig
+*.dex
+*.ap_
+intermediates/
+# editor / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
